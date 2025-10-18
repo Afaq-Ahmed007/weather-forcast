@@ -1,4 +1,4 @@
-import gradio as gr
+import streamlit as st
 import requests
 import os
 
