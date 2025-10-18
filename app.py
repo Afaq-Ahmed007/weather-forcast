@@ -2,13 +2,14 @@ import streamlit as st
 import requests
 import os
 
-# Get your API key from https://openweathermap.org/api
-API_KEY = os.getenv("OPENWEATHER_API_KEY")  # set as secret on Hugging Face
+# ✅ Get your API key securely (set this in Streamlit Secrets)
+API_KEY = st.secrets.get("OPENWEATHER_API_KEY") or os.getenv("OPENWEATHER_API_KEY")
 
+# 🌤 Function to fetch weather data
 def get_weather(city):
     if not API_KEY:
-        return "❌ API key not set. Please add OPENWEATHER_API_KEY in Hugging Face Secrets."
-    
+        return "❌ API key not set. Please add OPENWEATHER_API_KEY in Streamlit Secrets."
+
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
     response = requests.get(url)
 
@@ -22,23 +23,25 @@ def get_weather(city):
     humidity = data["main"]["humidity"]
 
     result = (
-        f"🌍 City: {city}\n"
-        f"🌤 Weather: {weather}\n"
-        f"🌡 Temperature: {temp}°C (Feels like {feels_like}°C)\n"
-        f"💧 Humidity: {humidity}%"
+        f"🌍 **City:** {city}\n"
+        f"🌤 **Weather:** {weather}\n"
+        f"🌡 **Temperature:** {temp}°C (Feels like {feels_like}°C)\n"
+        f"💧 **Humidity:** {humidity}%"
     )
     return result
 
 
-with gr.Blocks() as demo:
-    gr.Markdown("# ☀️ Weather App")
-    gr.Markdown("Enter a city name to get current weather conditions.")
+# 🚀 Streamlit App UI
+st.set_page_config(page_title="Weather App", page_icon="☀️", layout="centered")
 
-    city = gr.Textbox(label="City", placeholder="e.g. Islamabad")
-    output = gr.Textbox(label="Weather Report")
-    btn = gr.Button("Get Weather")
+st.title("☀️ Weather App")
+st.write("Enter a city name below to get current weather conditions:")
 
-    btn.click(get_weather, inputs=city, outputs=output)
+city = st.text_input("City", placeholder="e.g. Islamabad")
 
-if __name__ == "__main__":
-    demo.launch()
+if st.button("Get Weather"):
+    if city:
+        report = get_weather(city)
+        st.markdown(report)
+    else:
+        st.warning("Please enter a city name.")
